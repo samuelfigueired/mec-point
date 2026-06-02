@@ -1,5 +1,7 @@
 package com.mecpoint.veiculo.service.impl;
 
+import com.mecpoint.core.exceptions.BusinessException;
+import com.mecpoint.core.exceptions.ResourceNotFoundException;
 import com.mecpoint.user.entities.User;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.veiculo.dto.VeiculoInDTO;
@@ -33,6 +35,8 @@ public class VeiculoServicePadrao implements VeiculoService {
 
     @Override
     public List<VeiculoOutDTO> listarPorUsuario(Long usuarioId) {
+        buscarUsuario(usuarioId);
+
         return repository.findByUsuarioId(usuarioId)
                 .stream()
                 .map(mapper::toOutDTO)
@@ -47,7 +51,7 @@ public class VeiculoServicePadrao implements VeiculoService {
     @Override
     public Veiculo buscarEntidadePorId(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Veículo não encontrado: " + id));
     }
 
     @Override
@@ -55,7 +59,7 @@ public class VeiculoServicePadrao implements VeiculoService {
         String placa = normalizarPlaca(dto.getPlaca());
 
         if (repository.existsByPlacaIgnoreCase(placa)) {
-            throw new RuntimeException("Já existe um veículo cadastrado com a placa: " + placa);
+            throw new BusinessException("Já existe um veículo cadastrado com a placa: " + placa);
         }
 
         User usuario = buscarUsuario(dto.getUsuarioId());
@@ -75,7 +79,7 @@ public class VeiculoServicePadrao implements VeiculoService {
         repository.findByPlacaIgnoreCase(placa)
                 .filter(veiculo -> !veiculo.getId().equals(id))
                 .ifPresent(veiculo -> {
-                    throw new RuntimeException("Já existe um veículo cadastrado com a placa: " + placa);
+                    throw new BusinessException("Já existe um veículo cadastrado com a placa: " + placa);
                 });
 
         User usuario = buscarUsuario(dto.getUsuarioId());
@@ -92,16 +96,17 @@ public class VeiculoServicePadrao implements VeiculoService {
 
     @Override
     public void deletarVeiculo(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Veículo não encontrado: " + id);
-        }
-
-        repository.deleteById(id);
+        Veiculo veiculo = buscarEntidadePorId(id);
+        repository.delete(veiculo);
     }
 
     private User buscarUsuario(Long usuarioId) {
+        if (usuarioId == null) {
+            throw new ResourceNotFoundException("Usuário do veículo não informado.");
+        }
+
         return userRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + usuarioId));
     }
 
     private String normalizarPlaca(String placa) {

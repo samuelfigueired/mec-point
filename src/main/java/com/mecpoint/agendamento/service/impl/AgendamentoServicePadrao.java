@@ -6,6 +6,7 @@ import com.mecpoint.agendamento.entities.Agendamento;
 import com.mecpoint.agendamento.mapper.AgendamentoMapper;
 import com.mecpoint.agendamento.repository.AgendamentoRepository;
 import com.mecpoint.agendamento.service.AgendamentoService;
+import com.mecpoint.core.exceptions.ResourceNotFoundException;
 import com.mecpoint.user.entities.User;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.veiculo.entities.Veiculo;
@@ -38,7 +39,19 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
     @Override
     public List<AgendamentoOutDTO> listarPorUsuario(Long usuarioId) {
+        buscarUsuario(usuarioId);
+
         return repository.findByUsuarioId(usuarioId)
+                .stream()
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorVeiculo(Long veiculoId) {
+        buscarVeiculo(veiculoId);
+
+        return repository.findByVeiculoId(veiculoId)
                 .stream()
                 .map(mapper::toOutDTO)
                 .toList();
@@ -50,11 +63,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         entity.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
         entity.setUsuario(buscarUsuario(dto.getUsuarioId()));
-
-        String ano = String.valueOf(Year.now().getValue());
-        String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-
-        entity.setNumeroAgd(String.format("AGD-%s-%s", ano, random));
+        entity.setNumeroAgd(gerarNumeroAgendamento());
 
         if (entity.getStatus() == null || entity.getStatus().isBlank()) {
             entity.setStatus("PENDENTE");
@@ -65,8 +74,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
     @Override
     public AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto) {
-        Agendamento agendamento = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
+        Agendamento agendamento = buscarEntidadePorId(id);
 
         agendamento.setCliente(dto.getCliente());
         agendamento.setServico(dto.getServico());
@@ -86,11 +94,13 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
     @Override
     public void deletarAgendamento(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Agendamento não encontrado: " + id);
-        }
+        Agendamento agendamento = buscarEntidadePorId(id);
+        repository.delete(agendamento);
+    }
 
-        repository.deleteById(id);
+    private Agendamento buscarEntidadePorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Agendamento não encontrado: " + id));
     }
 
     private Veiculo buscarVeiculo(Long veiculoId) {
@@ -99,18 +109,22 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         }
 
         return veiculoRepository.findById(veiculoId)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado: " + veiculoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Veículo não encontrado: " + veiculoId));
     }
 
     private User buscarUsuario(Long usuarioId) {
+        if (usuarioId == null) {
+            throw new ResourceNotFoundException("Usuário do agendamento não informado.");
+        }
+
         return userRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + usuarioId));
     }
-    @Override
-    public List<AgendamentoOutDTO> listarPorVeiculo(Long veiculoId) {
-        return repository.findByVeiculoId(veiculoId)
-                .stream()
-                .map(mapper::toOutDTO)
-                .toList();
+
+    private String gerarNumeroAgendamento() {
+        String ano = String.valueOf(Year.now().getValue());
+        String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        return String.format("AGD-%s-%s", ano, random);
     }
 }
