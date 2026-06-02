@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -15,8 +16,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/veiculos")
-@Tag(name = "Veículos", description = "Endpoints de gerenciamento de veículos")
 @RequiredArgsConstructor
+@Tag(name = "Veículos", description = "Endpoints de gerenciamento de veículos")
+@PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
 public class VeiculoController {
 
     private final VeiculoService service;
@@ -33,10 +35,10 @@ public class VeiculoController {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    @GetMapping("/usuario/{id}")
+    @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Lista veículos de um usuário")
-    public ResponseEntity<List<VeiculoOutDTO>> listarPorUsuario(@PathVariable Long id) {
-        return ResponseEntity.ok(service.listarPorUsuario(id));
+    public ResponseEntity<List<VeiculoOutDTO>> listarPorUsuario(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(service.listarPorUsuario(usuarioId));
     }
 
     @PostMapping
@@ -51,7 +53,10 @@ public class VeiculoController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza um veículo existente")
-    public ResponseEntity<VeiculoOutDTO> atualizar(@PathVariable Long id, @RequestBody @Valid VeiculoInDTO dto) {
+    public ResponseEntity<VeiculoOutDTO> atualizar(
+            @PathVariable Long id,
+            @RequestBody @Valid VeiculoInDTO dto
+    ) {
         return ResponseEntity.ok(service.atualizarVeiculo(id, dto));
     }
 

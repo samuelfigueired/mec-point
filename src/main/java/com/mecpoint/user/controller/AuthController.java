@@ -6,15 +6,15 @@ import com.mecpoint.user.dto.TokenDTO;
 import com.mecpoint.user.dto.UserInDTO;
 import com.mecpoint.user.dto.UserOutDTO;
 import com.mecpoint.user.entities.User;
-import com.mecpoint.user.mapper.UserMapper;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.user.service.UserService;
-
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,7 +29,8 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenDTO> login(@RequestBody LoginDTO dto) {
+    @Operation(summary = "Realiza login e retorna o token JWT")
+    public ResponseEntity<TokenDTO> login(@RequestBody @Valid LoginDTO dto) {
 
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
@@ -47,7 +48,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserOutDTO> register(@RequestBody UserInDTO dto) {
+    @Operation(summary = "Cadastra um novo usuário comum")
+    public ResponseEntity<UserOutDTO> register(@RequestBody @Valid UserInDTO dto) {
         return ResponseEntity.ok(userService.criar(dto));
     }
 }

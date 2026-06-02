@@ -1,6 +1,7 @@
 package com.mecpoint.user.entities.enums;
 
 public enum UserRole {
+    USER,
     ADMIN,
-    USER
+    MECANICO
 }

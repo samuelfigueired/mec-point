@@ -2,13 +2,11 @@ package com.mecpoint.user.dto;
 
 import com.mecpoint.user.entities.enums.UserRole;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class UserRoleDTO {
 
-    @NotNull
+    @NotNull(message = "A permissão do usuário é obrigatória.")
     private UserRole role;
 }
