@@ -10,6 +10,7 @@ import com.mecpoint.user.mapper.UserMapper;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.user.service.UserService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Autenticação", description = "Endpoints de login e cadastro de usuários")
 public class AuthController {
 
     private final AuthenticationManager authManager;
