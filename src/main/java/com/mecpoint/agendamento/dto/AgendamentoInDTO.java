@@ -7,9 +7,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * DTO de entrada usado nas operações de criação e atualização de agendamentos.
- */
 @Data
 public class AgendamentoInDTO {
 
@@ -24,4 +21,9 @@ public class AgendamentoInDTO {
     private LocalDateTime dataHora;
 
     private String status;
+
+    private Long veiculoId;
+
+    @NotNull(message = "O usuário do agendamento é obrigatório.")
+    private Long usuarioId;
 }

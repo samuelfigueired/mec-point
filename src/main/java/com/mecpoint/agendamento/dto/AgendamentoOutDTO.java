@@ -4,15 +4,21 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * DTO de saída usado nas respostas da API.
- */
 @Data
 public class AgendamentoOutDTO {
+
     private Long id;
     private String numeroAgd;
     private String cliente;
     private String servico;
     private LocalDateTime dataHora;
     private String status;
+
+    private Long veiculoId;
+    private String veiculoModelo;
+    private String veiculoMarca;
+    private String veiculoPlaca;
+
+    private Long usuarioId;
+    private String usuarioNome;
 }

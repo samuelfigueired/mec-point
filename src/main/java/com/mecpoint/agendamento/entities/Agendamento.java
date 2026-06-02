@@ -1,10 +1,11 @@
 package com.mecpoint.agendamento.entities;
 
+import com.mecpoint.user.entities.User;
+import com.mecpoint.veiculo.entities.Veiculo;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "TB_AGENDAMENTO")
@@ -30,4 +31,12 @@ public class Agendamento {
 
     @Column(name = "STATUS", nullable = false, length = 20)
     private String status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_VEICULO")
+    private Veiculo veiculo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO", nullable = false)
+    private User usuario;
 }

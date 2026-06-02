@@ -2,63 +2,20 @@ package com.mecpoint.agendamento.service;
 
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
-import com.mecpoint.agendamento.mapper.AgendamentoMapper;
-import com.mecpoint.agendamento.entities.Agendamento;
-import com.mecpoint.agendamento.repository.AgendamentoRepository;
-import org.springframework.stereotype.Service;
 
-import java.time.Year;
 import java.util.List;
-import java.util.UUID;
 
-@Service
-public class AgendamentoService {
+public interface AgendamentoService {
 
-    private final AgendamentoRepository repository;
-    private final AgendamentoMapper mapper;
+    List<AgendamentoOutDTO> listarTodos();
 
-    public AgendamentoService(AgendamentoRepository repository, AgendamentoMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
+    List<AgendamentoOutDTO> listarPorUsuario(Long usuarioId);
 
-    public List<AgendamentoOutDTO> listarTodos() {
-        return repository.findAll()
-                .stream()
-                .map(mapper::toOutDTO)
-                .toList();
-    }
+    List<AgendamentoOutDTO> listarPorVeiculo(Long veiculoId);
 
-    public AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto) {
-        Agendamento entity = mapper.toEntity(dto);
+    AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto);
 
-        String ano = String.valueOf(Year.now().getValue());
-        String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        entity.setNumeroAgd(String.format("AGD-%s-%s", ano, random));
+    AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto);
 
-         if (entity.getStatus() == null || entity.getStatus().isBlank()) {
-            entity.setStatus("PENDENTE");
-        }
-
-        return mapper.toOutDTO(repository.save(entity));
-    }
-
-    public AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto) {
-        return repository.findById(id)
-                .map(agendamento -> {
-                    agendamento.setCliente(dto.getCliente());
-                    agendamento.setServico(dto.getServico());
-                    agendamento.setDataHora(dto.getDataHora());
-                    agendamento.setStatus(dto.getStatus());
-                    return mapper.toOutDTO(repository.save(agendamento));
-                })
-                .orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + id));
-    }
-
-    public void deletarAgendamento(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Agendamento não encontrado: " + id);
-        }
-        repository.deleteById(id);
-    }
+    void deletarAgendamento(Long id);
 }
