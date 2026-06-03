@@ -198,4 +198,9 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return String.format("AGD-%s-%s", ano, random);
     }
+
+    @Override
+    public AgendamentoOutDTO buscarPorId(Long id) {
+        return mapper.toOutDTO(buscarEntidadePorId(id));
+    }
 }

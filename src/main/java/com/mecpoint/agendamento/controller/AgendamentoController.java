@@ -49,6 +49,13 @@ public class AgendamentoController {
         return ResponseEntity.ok(service.listarPorMecanico(mecanicoId));
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
+    @Operation(summary = "Busca um agendamento por ID")
+    public ResponseEntity<AgendamentoOutDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Cria um novo agendamento")

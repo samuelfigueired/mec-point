@@ -15,6 +15,8 @@ public interface AgendamentoService {
 
     List<AgendamentoOutDTO> listarPorMecanico(Long mecanicoId);
 
+    AgendamentoOutDTO buscarPorId(Long id);
+
     AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto);
 
     AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto);
