@@ -297,4 +297,35 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return String.format("AGD-%s-%s", ano, random);
     }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorStatus(StatusAgendamento status) {
+        return repository.findByStatus(status)
+                .stream()
+                .filter(this::possuiPermissaoVisualizacao)
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorUsuarioEStatus(Long usuarioId, StatusAgendamento status) {
+        buscarUsuario(usuarioId);
+        validarPermissaoListagemPorUsuario(usuarioId);
+
+        return repository.findByUsuarioIdAndStatus(usuarioId, status)
+                .stream()
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorMecanicoEStatus(Long mecanicoId, StatusAgendamento status) {
+        buscarMecanico(mecanicoId);
+
+        return repository.findByMecanicoIdAndStatus(mecanicoId, status)
+                .stream()
+                .filter(this::possuiPermissaoVisualizacao)
+                .map(mapper::toOutDTO)
+                .toList();
+    }
 }
