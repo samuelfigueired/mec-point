@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.service.impl;
 
+import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
 import com.mecpoint.agendamento.entities.Agendamento;
@@ -79,12 +80,61 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     }
 
     @Override
+    public List<AgendamentoOutDTO> listarPorStatus(StatusAgendamento status) {
+        return repository.findByStatus(status)
+                .stream()
+                .filter(this::possuiPermissaoVisualizacao)
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorUsuarioEStatus(Long usuarioId, StatusAgendamento status) {
+        buscarUsuario(usuarioId);
+        validarPermissaoListagemPorUsuario(usuarioId);
+
+        return repository.findByUsuarioIdAndStatus(usuarioId, status)
+                .stream()
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
+    public List<AgendamentoOutDTO> listarPorMecanicoEStatus(Long mecanicoId, StatusAgendamento status) {
+        buscarMecanico(mecanicoId);
+
+        return repository.findByMecanicoIdAndStatus(mecanicoId, status)
+                .stream()
+                .filter(this::possuiPermissaoVisualizacao)
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
     public AgendamentoOutDTO buscarPorId(Long id) {
         Agendamento agendamento = buscarEntidadePorId(id);
 
         validarPermissaoVisualizacao(agendamento);
 
         return mapper.toOutDTO(agendamento);
+    }
+
+    @Override
+    public AgendamentoDashboardResumoDTO buscarResumoDashboardMecanicoLogado() {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (!UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            throw new BusinessException("Apenas mecânicos podem acessar este dashboard.");
+        }
+
+        return montarResumoPorMecanico(usuarioLogado.getId());
+    }
+
+    @Override
+    public AgendamentoDashboardResumoDTO buscarResumoDashboardPorMecanico(Long mecanicoId) {
+        buscarMecanico(mecanicoId);
+
+        return montarResumoPorMecanico(mecanicoId);
     }
 
     @Override
@@ -291,41 +341,23 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         throw new BusinessException("Você não possui permissão para alterar agendamentos.");
     }
 
+    private AgendamentoDashboardResumoDTO montarResumoPorMecanico(Long mecanicoId) {
+        return new AgendamentoDashboardResumoDTO(
+                repository.countByMecanicoId(mecanicoId),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.PENDENTE),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.AGENDADO),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.CONFIRMADO),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.EM_ANDAMENTO),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.QUASE_FINALIZADO),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.FINALIZADO),
+                repository.countByMecanicoIdAndStatus(mecanicoId, StatusAgendamento.CANCELADO)
+        );
+    }
+
     private String gerarNumeroAgendamento() {
         String ano = String.valueOf(Year.now().getValue());
         String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
         return String.format("AGD-%s-%s", ano, random);
-    }
-
-    @Override
-    public List<AgendamentoOutDTO> listarPorStatus(StatusAgendamento status) {
-        return repository.findByStatus(status)
-                .stream()
-                .filter(this::possuiPermissaoVisualizacao)
-                .map(mapper::toOutDTO)
-                .toList();
-    }
-
-    @Override
-    public List<AgendamentoOutDTO> listarPorUsuarioEStatus(Long usuarioId, StatusAgendamento status) {
-        buscarUsuario(usuarioId);
-        validarPermissaoListagemPorUsuario(usuarioId);
-
-        return repository.findByUsuarioIdAndStatus(usuarioId, status)
-                .stream()
-                .map(mapper::toOutDTO)
-                .toList();
-    }
-
-    @Override
-    public List<AgendamentoOutDTO> listarPorMecanicoEStatus(Long mecanicoId, StatusAgendamento status) {
-        buscarMecanico(mecanicoId);
-
-        return repository.findByMecanicoIdAndStatus(mecanicoId, status)
-                .stream()
-                .filter(this::possuiPermissaoVisualizacao)
-                .map(mapper::toOutDTO)
-                .toList();
     }
 }

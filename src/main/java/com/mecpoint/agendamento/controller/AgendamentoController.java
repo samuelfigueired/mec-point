@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.controller;
 
+import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
 import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
@@ -50,6 +51,49 @@ public class AgendamentoController {
         return ResponseEntity.ok(service.listarPorMecanico(mecanicoId));
     }
 
+    @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
+    @Operation(summary = "Lista agendamentos por status")
+    public ResponseEntity<List<AgendamentoOutDTO>> listarPorStatus(@PathVariable StatusAgendamento status) {
+        return ResponseEntity.ok(service.listarPorStatus(status));
+    }
+
+    @GetMapping("/usuario/{usuarioId}/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
+    @Operation(summary = "Lista agendamentos de um usuário por status")
+    public ResponseEntity<List<AgendamentoOutDTO>> listarPorUsuarioEStatus(
+            @PathVariable Long usuarioId,
+            @PathVariable StatusAgendamento status
+    ) {
+        return ResponseEntity.ok(service.listarPorUsuarioEStatus(usuarioId, status));
+    }
+
+    @GetMapping("/mecanico/{mecanicoId}/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
+    @Operation(summary = "Lista agendamentos de um mecânico por status")
+    public ResponseEntity<List<AgendamentoOutDTO>> listarPorMecanicoEStatus(
+            @PathVariable Long mecanicoId,
+            @PathVariable StatusAgendamento status
+    ) {
+        return ResponseEntity.ok(service.listarPorMecanicoEStatus(mecanicoId, status));
+    }
+
+    @GetMapping("/dashboard/mecanico")
+    @PreAuthorize("hasRole('MECANICO')")
+    @Operation(summary = "Retorna resumo dos agendamentos do mecânico logado")
+    public ResponseEntity<AgendamentoDashboardResumoDTO> buscarResumoDashboardMecanicoLogado() {
+        return ResponseEntity.ok(service.buscarResumoDashboardMecanicoLogado());
+    }
+
+    @GetMapping("/dashboard/mecanico/{mecanicoId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Retorna resumo dos agendamentos de um mecânico específico")
+    public ResponseEntity<AgendamentoDashboardResumoDTO> buscarResumoDashboardPorMecanico(
+            @PathVariable Long mecanicoId
+    ) {
+        return ResponseEntity.ok(service.buscarResumoDashboardPorMecanico(mecanicoId));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Busca um agendamento por ID")
@@ -80,32 +124,5 @@ public class AgendamentoController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletarAgendamento(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
-    @Operation(summary = "Lista agendamentos por status")
-    public ResponseEntity<List<AgendamentoOutDTO>> listarPorStatus(@PathVariable StatusAgendamento status) {
-        return ResponseEntity.ok(service.listarPorStatus(status));
-    }
-
-    @GetMapping("/usuario/{usuarioId}/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
-    @Operation(summary = "Lista agendamentos de um usuário por status")
-    public ResponseEntity<List<AgendamentoOutDTO>> listarPorUsuarioEStatus(
-            @PathVariable Long usuarioId,
-            @PathVariable StatusAgendamento status
-    ) {
-        return ResponseEntity.ok(service.listarPorUsuarioEStatus(usuarioId, status));
-    }
-
-    @GetMapping("/mecanico/{mecanicoId}/status/{status}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
-    @Operation(summary = "Lista agendamentos de um mecânico por status")
-    public ResponseEntity<List<AgendamentoOutDTO>> listarPorMecanicoEStatus(
-            @PathVariable Long mecanicoId,
-            @PathVariable StatusAgendamento status
-    ) {
-        return ResponseEntity.ok(service.listarPorMecanicoEStatus(mecanicoId, status));
     }
 }

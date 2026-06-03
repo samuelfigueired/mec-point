@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.service;
 
+import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
 import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
@@ -24,9 +25,14 @@ public interface AgendamentoService {
 
     AgendamentoOutDTO buscarPorId(Long id);
 
+    AgendamentoDashboardResumoDTO buscarResumoDashboardPorMecanico(Long mecanicoId);
+
     AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto);
 
     AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto);
 
     void deletarAgendamento(Long id);
+
+    AgendamentoDashboardResumoDTO buscarResumoDashboardMecanicoLogado();
+
 }
