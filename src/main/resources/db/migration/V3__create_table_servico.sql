@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS TB_SERVICO (
+                                          ID BIGSERIAL PRIMARY KEY,
+                                          NOME VARCHAR(100) NOT NULL,
+    DESCRICAO VARCHAR(500),
+    VALOR NUMERIC(10, 2) NOT NULL,
+    CATEGORIA VARCHAR(100),
+    ATIVO BOOLEAN NOT NULL DEFAULT TRUE
+    );
