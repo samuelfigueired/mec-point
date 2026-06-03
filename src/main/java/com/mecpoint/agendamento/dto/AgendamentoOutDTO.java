@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.dto;
 
+import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,8 +14,7 @@ public class AgendamentoOutDTO {
     private String cliente;
     private String servico;
     private LocalDateTime dataHora;
-    private String status;
-
+    private StatusAgendamento status;
     private Long veiculoId;
     private String veiculoModelo;
     private String veiculoMarca;

@@ -3,6 +3,7 @@ package com.mecpoint.agendamento.service.impl;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
 import com.mecpoint.agendamento.entities.Agendamento;
+import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import com.mecpoint.agendamento.mapper.AgendamentoMapper;
 import com.mecpoint.agendamento.repository.AgendamentoRepository;
 import com.mecpoint.agendamento.service.AgendamentoService;
@@ -84,8 +85,10 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         entity.setNumeroAgd(gerarNumeroAgendamento());
 
-        if (entity.getStatus() == null || entity.getStatus().isBlank()) {
-            entity.setStatus("PENDENTE");
+        if (dto.getStatus() == null) {
+            entity.setStatus(StatusAgendamento.PENDENTE);
+        } else {
+            entity.setStatus(dto.getStatus());
         }
 
         return mapper.toOutDTO(repository.save(entity));
@@ -98,8 +101,8 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         agendamento.setCliente(dto.getCliente());
         agendamento.setDataHora(dto.getDataHora());
 
-        if (dto.getStatus() == null || dto.getStatus().isBlank()) {
-            agendamento.setStatus("PENDENTE");
+        if (dto.getStatus() == null) {
+            agendamento.setStatus(StatusAgendamento.PENDENTE);
         } else {
             agendamento.setStatus(dto.getStatus());
         }

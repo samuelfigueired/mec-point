@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.entities;
 
+import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import com.mecpoint.servico.entities.Servico;
 import com.mecpoint.user.entities.User;
 import com.mecpoint.veiculo.entities.Veiculo;
@@ -30,8 +31,9 @@ public class Agendamento {
     @Column(name = "DATA_HORA", nullable = false)
     private LocalDateTime dataHora;
 
-    @Column(name = "STATUS", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false, length = 30)
+    private StatusAgendamento status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_VEICULO")

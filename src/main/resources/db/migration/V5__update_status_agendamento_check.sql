@@ -1,0 +1,22 @@
+UPDATE TB_AGENDAMENTO
+SET STATUS = 'PENDENTE'
+WHERE STATUS IS NULL OR TRIM(STATUS) = '';
+
+UPDATE TB_AGENDAMENTO
+SET STATUS = 'EM_ANDAMENTO'
+WHERE STATUS = 'EM ANDAMENTO';
+
+ALTER TABLE TB_AGENDAMENTO
+DROP CONSTRAINT IF EXISTS TB_AGENDAMENTO_STATUS_CHECK;
+
+ALTER TABLE TB_AGENDAMENTO
+    ADD CONSTRAINT TB_AGENDAMENTO_STATUS_CHECK
+        CHECK (STATUS IN (
+                          'PENDENTE',
+                          'AGENDADO',
+                          'CONFIRMADO',
+                          'EM_ANDAMENTO',
+                          'QUASE_FINALIZADO',
+                          'FINALIZADO',
+                          'CANCELADO'
+            ));

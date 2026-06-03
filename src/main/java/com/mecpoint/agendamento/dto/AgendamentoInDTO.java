@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.dto;
 
+import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -15,7 +16,7 @@ public class AgendamentoInDTO {
     @NotNull(message = "A data e hora são obrigatórias.")
     private LocalDateTime dataHora;
 
-    private String status;
+    private StatusAgendamento status;
 
     @NotNull(message = "O veículo é obrigatório.")
     private Long veiculoId;
