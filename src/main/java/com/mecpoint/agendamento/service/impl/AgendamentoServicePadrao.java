@@ -17,6 +17,8 @@ import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.veiculo.entities.Veiculo;
 import com.mecpoint.veiculo.repository.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     @Override
     public List<AgendamentoOutDTO> listarPorUsuario(Long usuarioId) {
         buscarUsuario(usuarioId);
+        validarPermissaoListagemPorUsuario(usuarioId);
 
         return repository.findByUsuarioId(usuarioId)
                 .stream()
@@ -59,6 +62,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return repository.findByVeiculoId(veiculoId)
                 .stream()
+                .filter(this::possuiPermissaoVisualizacao)
                 .map(mapper::toOutDTO)
                 .toList();
     }
@@ -69,8 +73,18 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return repository.findByMecanicoId(mecanicoId)
                 .stream()
+                .filter(this::possuiPermissaoVisualizacao)
                 .map(mapper::toOutDTO)
                 .toList();
+    }
+
+    @Override
+    public AgendamentoOutDTO buscarPorId(Long id) {
+        Agendamento agendamento = buscarEntidadePorId(id);
+
+        validarPermissaoVisualizacao(agendamento);
+
+        return mapper.toOutDTO(agendamento);
     }
 
     @Override
@@ -101,6 +115,8 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     @Override
     public AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto) {
         Agendamento agendamento = buscarEntidadePorId(id);
+
+        validarPermissaoAlteracao(agendamento);
 
         agendamento.setCliente(dto.getCliente());
         agendamento.setDescricao(dto.getDescricao());
@@ -192,15 +208,93 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         }
     }
 
+    private User getUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new BusinessException("Usuário não autenticado.");
+        }
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado não encontrado."));
+    }
+
+    private void validarPermissaoVisualizacao(Agendamento agendamento) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            if (agendamento.getMecanico() != null &&
+                    agendamento.getMecanico().getId().equals(usuarioLogado.getId())) {
+                return;
+            }
+
+            throw new BusinessException("Você não possui permissão para visualizar este agendamento.");
+        }
+
+        if (UserRole.USER.equals(usuarioLogado.getRole())) {
+            if (agendamento.getUsuario() != null &&
+                    agendamento.getUsuario().getId().equals(usuarioLogado.getId())) {
+                return;
+            }
+
+            throw new BusinessException("Você não possui permissão para visualizar este agendamento.");
+        }
+
+        throw new BusinessException("Perfil de usuário sem permissão para visualizar agendamentos.");
+    }
+
+    private boolean possuiPermissaoVisualizacao(Agendamento agendamento) {
+        try {
+            validarPermissaoVisualizacao(agendamento);
+            return true;
+        } catch (BusinessException e) {
+            return false;
+        }
+    }
+
+    private void validarPermissaoListagemPorUsuario(Long usuarioId) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole()) || UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (UserRole.USER.equals(usuarioLogado.getRole()) && usuarioLogado.getId().equals(usuarioId)) {
+            return;
+        }
+
+        throw new BusinessException("Você não possui permissão para listar agendamentos de outro usuário.");
+    }
+
+    private void validarPermissaoAlteracao(Agendamento agendamento) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            if (agendamento.getMecanico() != null &&
+                    agendamento.getMecanico().getId().equals(usuarioLogado.getId())) {
+                return;
+            }
+
+            throw new BusinessException("Você não possui permissão para alterar este agendamento.");
+        }
+
+        throw new BusinessException("Você não possui permissão para alterar agendamentos.");
+    }
+
     private String gerarNumeroAgendamento() {
         String ano = String.valueOf(Year.now().getValue());
         String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
         return String.format("AGD-%s-%s", ano, random);
-    }
-
-    @Override
-    public AgendamentoOutDTO buscarPorId(Long id) {
-        return mapper.toOutDTO(buscarEntidadePorId(id));
     }
 }
