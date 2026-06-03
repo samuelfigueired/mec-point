@@ -83,7 +83,7 @@ public class VeiculoServicePadrao implements VeiculoService {
             throw new BusinessException("Já existe um veículo cadastrado com a placa: " + placa);
         }
 
-        User usuario = buscarUsuario(dto.getUsuarioId());
+        User usuario = buscarUsuarioDoVeiculo(dto.getUsuarioId());
 
         Veiculo entity = mapper.toEntity(dto);
         entity.setPlaca(placa);
@@ -193,5 +193,15 @@ public class VeiculoServicePadrao implements VeiculoService {
 
     private String normalizarPlaca(String placa) {
         return placa == null ? null : placa.replace("-", "").trim().toUpperCase();
+    }
+
+    private User buscarUsuarioDoVeiculo(Long usuarioId) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole()) && usuarioId != null) {
+            return buscarUsuario(usuarioId);
+        }
+
+        return usuarioLogado;
     }
 }

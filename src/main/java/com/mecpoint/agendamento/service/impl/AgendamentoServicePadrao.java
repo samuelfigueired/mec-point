@@ -177,7 +177,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         entity.setDataHora(dto.getDataHora());
 
         entity.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
-        entity.setUsuario(buscarUsuario(dto.getUsuarioId()));
+        entity.setUsuario(buscarUsuarioDoAgendamento(dto.getUsuarioId()));
         entity.setMecanico(buscarMecanico(dto.getMecanicoId()));
 
         aplicarServico(entity, dto);
@@ -441,5 +441,15 @@ public class AgendamentoServicePadrao implements AgendamentoService {
             case FINALIZADO -> "O serviço foi concluído e o veículo está pronto.";
             case CANCELADO -> "O agendamento foi cancelado.";
         };
+    }
+
+    private User buscarUsuarioDoAgendamento(Long usuarioId) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole()) && usuarioId != null) {
+            return buscarUsuario(usuarioId);
+        }
+
+        return usuarioLogado;
     }
 }

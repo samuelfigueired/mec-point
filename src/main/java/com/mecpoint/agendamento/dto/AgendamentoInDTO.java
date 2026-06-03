@@ -23,7 +23,6 @@ public class AgendamentoInDTO {
     @NotNull(message = "O veículo é obrigatório.")
     private Long veiculoId;
 
-    @NotNull(message = "O usuário é obrigatório.")
     private Long usuarioId;
 
     @NotNull(message = "O mecânico é obrigatório.")
