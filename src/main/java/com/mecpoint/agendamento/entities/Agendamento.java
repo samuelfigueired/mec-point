@@ -39,4 +39,8 @@ public class Agendamento {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_USUARIO", nullable = false)
     private User usuario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_MECANICO")
+    private User mecanico;
 }

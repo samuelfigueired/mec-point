@@ -14,6 +14,8 @@ import com.mecpoint.veiculo.repository.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.mecpoint.core.exceptions.BusinessException;
+import com.mecpoint.user.entities.enums.UserRole;
 
 import java.time.Year;
 import java.util.List;
@@ -63,6 +65,8 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         entity.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
         entity.setUsuario(buscarUsuario(dto.getUsuarioId()));
+        entity.setMecanico(buscarMecanico(dto.getMecanicoId()));
+
         entity.setNumeroAgd(gerarNumeroAgendamento());
 
         if (entity.getStatus() == null || entity.getStatus().isBlank()) {
@@ -71,7 +75,6 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return mapper.toOutDTO(repository.save(entity));
     }
-
     @Override
     public AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto) {
         Agendamento agendamento = buscarEntidadePorId(id);
@@ -79,6 +82,8 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         agendamento.setCliente(dto.getCliente());
         agendamento.setServico(dto.getServico());
         agendamento.setDataHora(dto.getDataHora());
+
+        agendamento.setMecanico(buscarMecanico(dto.getMecanicoId()));
 
         if (dto.getStatus() == null || dto.getStatus().isBlank()) {
             agendamento.setStatus("PENDENTE");
@@ -121,6 +126,20 @@ public class AgendamentoServicePadrao implements AgendamentoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + usuarioId));
     }
 
+    private User buscarMecanico(Long mecanicoId) {
+        if (mecanicoId == null) {
+            throw new ResourceNotFoundException("Mecânico do agendamento não informado.");
+        }
+
+        User mecanico = userRepository.findById(mecanicoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Mecânico não encontrado: " + mecanicoId));
+
+        if (!UserRole.MECANICO.equals(mecanico.getRole())) {
+            throw new BusinessException("O usuário informado não possui perfil de mecânico.");
+        }
+
+        return mecanico;
+    }
     private String gerarNumeroAgendamento() {
         String ano = String.valueOf(Year.now().getValue());
         String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();

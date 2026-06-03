@@ -13,8 +13,9 @@ public interface AgendamentoMapper extends BaseMapper<Agendamento, AgendamentoIn
     @Override
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "numeroAgd", ignore = true)
-    @Mapping(target = "veiculo", ignore = true)
     @Mapping(target = "usuario", ignore = true)
+    @Mapping(target = "veiculo", ignore = true)
+    @Mapping(target = "mecanico", ignore = true)
     Agendamento toEntity(AgendamentoInDTO dto);
 
     @Override
@@ -24,5 +25,7 @@ public interface AgendamentoMapper extends BaseMapper<Agendamento, AgendamentoIn
     @Mapping(target = "veiculoPlaca", source = "veiculo.placa")
     @Mapping(target = "usuarioId", source = "usuario.id")
     @Mapping(target = "usuarioNome", source = "usuario.nome")
+    @Mapping(target = "mecanicoId", source = "mecanico.id")
+    @Mapping(target = "mecanicoNome", source = "mecanico.nome")
     AgendamentoOutDTO toOutDTO(Agendamento entity);
 }

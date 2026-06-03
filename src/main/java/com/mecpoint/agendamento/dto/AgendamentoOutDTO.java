@@ -21,4 +21,7 @@ public class AgendamentoOutDTO {
 
     private Long usuarioId;
     private String usuarioNome;
+
+    private Long mecanicoId;
+    private String mecanicoNome;
 }
