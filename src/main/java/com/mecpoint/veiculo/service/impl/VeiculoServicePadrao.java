@@ -3,6 +3,7 @@ package com.mecpoint.veiculo.service.impl;
 import com.mecpoint.core.exceptions.BusinessException;
 import com.mecpoint.core.exceptions.ResourceNotFoundException;
 import com.mecpoint.user.entities.User;
+import com.mecpoint.user.entities.enums.UserRole;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.veiculo.dto.VeiculoInDTO;
 import com.mecpoint.veiculo.dto.VeiculoOutDTO;
@@ -11,6 +12,8 @@ import com.mecpoint.veiculo.mapper.VeiculoMapper;
 import com.mecpoint.veiculo.repository.VeiculoRepository;
 import com.mecpoint.veiculo.service.VeiculoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,22 @@ public class VeiculoServicePadrao implements VeiculoService {
     }
 
     @Override
+    public List<VeiculoOutDTO> listarMeusVeiculos() {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole())) {
+            return listarTodos();
+        }
+
+        return repository.findByUsuarioId(usuarioLogado.getId())
+                .stream()
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
     public List<VeiculoOutDTO> listarPorUsuario(Long usuarioId) {
-        buscarUsuario(usuarioId);
+        validarPermissaoListagemPorUsuario(usuarioId);
 
         return repository.findByUsuarioId(usuarioId)
                 .stream()
@@ -45,7 +62,11 @@ public class VeiculoServicePadrao implements VeiculoService {
 
     @Override
     public VeiculoOutDTO buscarPorId(Long id) {
-        return mapper.toOutDTO(buscarEntidadePorId(id));
+        Veiculo veiculo = buscarEntidadePorId(id);
+
+        validarPermissaoVisualizacao(veiculo);
+
+        return mapper.toOutDTO(veiculo);
     }
 
     @Override
@@ -74,6 +95,9 @@ public class VeiculoServicePadrao implements VeiculoService {
     @Override
     public VeiculoOutDTO atualizarVeiculo(Long id, VeiculoInDTO dto) {
         Veiculo entity = buscarEntidadePorId(id);
+
+        validarPermissaoAlteracao(entity);
+
         String placa = normalizarPlaca(dto.getPlaca());
 
         repository.findByPlacaIgnoreCase(placa)
@@ -96,8 +120,11 @@ public class VeiculoServicePadrao implements VeiculoService {
 
     @Override
     public void deletarVeiculo(Long id) {
-        Veiculo veiculo = buscarEntidadePorId(id);
-        repository.delete(veiculo);
+        Veiculo entity = buscarEntidadePorId(id);
+
+        validarPermissaoAlteracao(entity);
+
+        repository.delete(entity);
     }
 
     private User buscarUsuario(Long usuarioId) {
@@ -107,6 +134,61 @@ public class VeiculoServicePadrao implements VeiculoService {
 
         return userRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + usuarioId));
+    }
+
+    private User getUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new BusinessException("Usuário não autenticado.");
+        }
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário autenticado não encontrado."));
+    }
+
+    private void validarPermissaoListagemPorUsuario(Long usuarioId) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole()) || UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (UserRole.USER.equals(usuarioLogado.getRole()) && usuarioLogado.getId().equals(usuarioId)) {
+            return;
+        }
+
+        throw new BusinessException("Você não possui permissão para listar veículos de outro usuário.");
+    }
+
+    private void validarPermissaoVisualizacao(Veiculo veiculo) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole()) || UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (veiculo.getUsuario() != null && veiculo.getUsuario().getId().equals(usuarioLogado.getId())) {
+            return;
+        }
+
+        throw new BusinessException("Você não possui permissão para visualizar este veículo.");
+    }
+
+    private void validarPermissaoAlteracao(Veiculo veiculo) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole())) {
+            return;
+        }
+
+        if (veiculo.getUsuario() != null && veiculo.getUsuario().getId().equals(usuarioLogado.getId())) {
+            return;
+        }
+
+        throw new BusinessException("Você não possui permissão para alterar este veículo.");
     }
 
     private String normalizarPlaca(String placa) {

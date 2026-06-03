@@ -10,6 +10,8 @@ public interface VeiculoService {
 
     List<VeiculoOutDTO> listarTodos();
 
+    List<VeiculoOutDTO> listarMeusVeiculos();
+
     List<VeiculoOutDTO> listarPorUsuario(Long usuarioId);
 
     VeiculoOutDTO buscarPorId(Long id);
