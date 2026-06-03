@@ -45,6 +45,33 @@ public class AgendamentoServicePadrao implements AgendamentoService {
                 .map(mapper::toOutDTO)
                 .toList();
     }
+    @Override
+    public List<AgendamentoOutDTO> listarMeusAgendamentos() {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        if (UserRole.ADMIN.equals(usuarioLogado.getRole())) {
+            return repository.findAll()
+                    .stream()
+                    .map(mapper::toOutDTO)
+                    .toList();
+        }
+
+        if (UserRole.MECANICO.equals(usuarioLogado.getRole())) {
+            return repository.findByMecanicoId(usuarioLogado.getId())
+                    .stream()
+                    .map(mapper::toOutDTO)
+                    .toList();
+        }
+
+        if (UserRole.USER.equals(usuarioLogado.getRole())) {
+            return repository.findByUsuarioId(usuarioLogado.getId())
+                    .stream()
+                    .map(mapper::toOutDTO)
+                    .toList();
+        }
+
+        throw new BusinessException("Perfil de usuário sem permissão para listar agendamentos.");
+    }
 
     @Override
     public List<AgendamentoOutDTO> listarPorUsuario(Long usuarioId) {

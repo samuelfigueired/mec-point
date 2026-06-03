@@ -94,6 +94,13 @@ public class AgendamentoController {
         return ResponseEntity.ok(service.buscarResumoDashboardPorMecanico(mecanicoId));
     }
 
+    @GetMapping("/meus")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
+    @Operation(summary = "Lista agendamentos do usuário autenticado")
+    public ResponseEntity<List<AgendamentoOutDTO>> listarMeusAgendamentos() {
+        return ResponseEntity.ok(service.listarMeusAgendamentos());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Busca um agendamento por ID")

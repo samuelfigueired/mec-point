@@ -11,6 +11,8 @@ public interface AgendamentoService {
 
     List<AgendamentoOutDTO> listarTodos();
 
+    List<AgendamentoOutDTO> listarMeusAgendamentos();
+
     List<AgendamentoOutDTO> listarPorUsuario(Long usuarioId);
 
     List<AgendamentoOutDTO> listarPorVeiculo(Long veiculoId);
@@ -25,6 +27,8 @@ public interface AgendamentoService {
 
     AgendamentoOutDTO buscarPorId(Long id);
 
+    AgendamentoDashboardResumoDTO buscarResumoDashboardMecanicoLogado();
+
     AgendamentoDashboardResumoDTO buscarResumoDashboardPorMecanico(Long mecanicoId);
 
     AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto);
@@ -32,7 +36,4 @@ public interface AgendamentoService {
     AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto);
 
     void deletarAgendamento(Long id);
-
-    AgendamentoDashboardResumoDTO buscarResumoDashboardMecanicoLogado();
-
 }
