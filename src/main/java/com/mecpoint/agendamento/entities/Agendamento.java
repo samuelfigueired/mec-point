@@ -9,9 +9,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "TB_AGENDAMENTO")
-@Data
 public class Agendamento {
 
     @Id
@@ -19,17 +19,20 @@ public class Agendamento {
     @Column(name = "ID_AGENDAMENTO")
     private Long id;
 
-    @Column(name = "NUMERO_AGD", unique = true, nullable = false, length = 30)
-    private String numeroAgd;
-
-    @Column(name = "CLIENTE", nullable = false, length = 100)
+    @Column(name = "CLIENTE")
     private String cliente;
 
-    @Column(name = "SERVICO", nullable = false, length = 100)
+    @Column(name = "DATA_HORA")
+    private LocalDateTime dataHora;
+
+    @Column(name = "NUMERO_AGD")
+    private String numeroAgd;
+
+    @Column(name = "SERVICO")
     private String servico;
 
-    @Column(name = "DATA_HORA", nullable = false)
-    private LocalDateTime dataHora;
+    @Column(name = "DESCRICAO", length = 1000)
+    private String descricao;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 30)
@@ -40,7 +43,7 @@ public class Agendamento {
     private Veiculo veiculo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_USUARIO", nullable = false)
+    @JoinColumn(name = "ID_USUARIO")
     private User usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)

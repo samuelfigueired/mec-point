@@ -77,6 +77,10 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     public AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto) {
         Agendamento entity = mapper.toEntity(dto);
 
+        entity.setCliente(dto.getCliente());
+        entity.setDescricao(dto.getDescricao());
+        entity.setDataHora(dto.getDataHora());
+
         entity.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
         entity.setUsuario(buscarUsuario(dto.getUsuarioId()));
         entity.setMecanico(buscarMecanico(dto.getMecanicoId()));
@@ -99,6 +103,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         Agendamento agendamento = buscarEntidadePorId(id);
 
         agendamento.setCliente(dto.getCliente());
+        agendamento.setDescricao(dto.getDescricao());
         agendamento.setDataHora(dto.getDataHora());
 
         if (dto.getStatus() == null) {

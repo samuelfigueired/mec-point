@@ -13,6 +13,8 @@ public class AgendamentoInDTO {
 
     private String servico;
 
+    private String descricao;
+
     @NotNull(message = "A data e hora são obrigatórias.")
     private LocalDateTime dataHora;
 

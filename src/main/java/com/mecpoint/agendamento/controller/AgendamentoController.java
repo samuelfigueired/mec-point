@@ -17,36 +17,47 @@ import java.util.List;
 @RequestMapping("/agendamentos")
 @RequiredArgsConstructor
 @Tag(name = "Agendamentos", description = "Endpoints de gerenciamento de agendamentos")
-@PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
 public class AgendamentoController {
 
     private final AgendamentoService service;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
     @Operation(summary = "Lista todos os agendamentos")
     public ResponseEntity<List<AgendamentoOutDTO>> listarTodos() {
         return ResponseEntity.ok(service.listarTodos());
     }
 
     @GetMapping("/usuario/{usuarioId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Lista agendamentos de um usuário")
     public ResponseEntity<List<AgendamentoOutDTO>> listarPorUsuario(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(service.listarPorUsuario(usuarioId));
     }
 
     @GetMapping("/veiculo/{veiculoId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Lista agendamentos de um veículo")
     public ResponseEntity<List<AgendamentoOutDTO>> listarPorVeiculo(@PathVariable Long veiculoId) {
         return ResponseEntity.ok(service.listarPorVeiculo(veiculoId));
     }
 
+    @GetMapping("/mecanico/{mecanicoId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
+    @Operation(summary = "Lista agendamentos de um mecânico")
+    public ResponseEntity<List<AgendamentoOutDTO>> listarPorMecanico(@PathVariable Long mecanicoId) {
+        return ResponseEntity.ok(service.listarPorMecanico(mecanicoId));
+    }
+
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO', 'USER')")
     @Operation(summary = "Cria um novo agendamento")
     public ResponseEntity<AgendamentoOutDTO> criar(@RequestBody @Valid AgendamentoInDTO dto) {
         return ResponseEntity.ok(service.criarAgendamento(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
     @Operation(summary = "Atualiza um agendamento existente")
     public ResponseEntity<AgendamentoOutDTO> atualizar(
             @PathVariable Long id,
@@ -56,6 +67,7 @@ public class AgendamentoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remove um agendamento")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletarAgendamento(id);

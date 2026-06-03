@@ -13,8 +13,10 @@ public class AgendamentoOutDTO {
     private String numeroAgd;
     private String cliente;
     private String servico;
+    private String descricao;
     private LocalDateTime dataHora;
     private StatusAgendamento status;
+
     private Long veiculoId;
     private String veiculoModelo;
     private String veiculoMarca;
