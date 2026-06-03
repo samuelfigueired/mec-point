@@ -3,6 +3,7 @@ package com.mecpoint.agendamento.controller;
 import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
+import com.mecpoint.agendamento.dto.AgendamentoStatusDTO;
 import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import com.mecpoint.agendamento.service.AgendamentoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,5 +132,15 @@ public class AgendamentoController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletarAgendamento(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
+    @Operation(summary = "Atualiza o status de um agendamento")
+    public ResponseEntity<AgendamentoOutDTO> atualizarStatus(
+            @PathVariable Long id,
+            @RequestBody @Valid AgendamentoStatusDTO dto
+    ) {
+        return ResponseEntity.ok(service.atualizarStatus(id, dto));
     }
 }

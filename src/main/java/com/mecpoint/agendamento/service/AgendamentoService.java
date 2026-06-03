@@ -3,6 +3,7 @@ package com.mecpoint.agendamento.service;
 import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
+import com.mecpoint.agendamento.dto.AgendamentoStatusDTO;
 import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public interface AgendamentoService {
     AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto);
 
     AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto);
+
+    AgendamentoOutDTO atualizarStatus(Long id, AgendamentoStatusDTO dto);
 
     void deletarAgendamento(Long id);
 }

@@ -3,9 +3,12 @@ package com.mecpoint.agendamento.service.impl;
 import com.mecpoint.agendamento.dto.AgendamentoDashboardResumoDTO;
 import com.mecpoint.agendamento.dto.AgendamentoInDTO;
 import com.mecpoint.agendamento.dto.AgendamentoOutDTO;
+import com.mecpoint.agendamento.dto.AgendamentoStatusDTO;
 import com.mecpoint.agendamento.entities.Agendamento;
+import com.mecpoint.agendamento.entities.AgendamentoEvento;
 import com.mecpoint.agendamento.entities.enums.StatusAgendamento;
 import com.mecpoint.agendamento.mapper.AgendamentoMapper;
+import com.mecpoint.agendamento.repository.AgendamentoEventoRepository;
 import com.mecpoint.agendamento.repository.AgendamentoRepository;
 import com.mecpoint.agendamento.service.AgendamentoService;
 import com.mecpoint.core.exceptions.BusinessException;
@@ -36,6 +39,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     private final VeiculoRepository veiculoRepository;
     private final UserRepository userRepository;
     private final ServicoRepository servicoRepository;
+    private final AgendamentoEventoRepository agendamentoEventoRepository;
     private final AgendamentoMapper mapper;
 
     @Override
@@ -386,5 +390,56 @@ public class AgendamentoServicePadrao implements AgendamentoService {
         String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
         return String.format("AGD-%s-%s", ano, random);
+    }
+
+    @Override
+    public AgendamentoOutDTO atualizarStatus(Long id, AgendamentoStatusDTO dto) {
+        Agendamento agendamento = buscarEntidadePorId(id);
+
+        validarPermissaoAlteracao(agendamento);
+
+        agendamento.setStatus(dto.getStatus());
+
+        criarEventoAutomaticoStatus(agendamento, dto.getStatus());
+
+        return mapper.toOutDTO(repository.save(agendamento));
+    }
+
+    private void criarEventoAutomaticoStatus(Agendamento agendamento, StatusAgendamento status) {
+        User usuarioLogado = getUsuarioAutenticado();
+
+        AgendamentoEvento evento = new AgendamentoEvento();
+        evento.setAgendamento(agendamento);
+        evento.setStatus(status);
+        evento.setTitulo(gerarTituloEventoStatus(status));
+        evento.setDescricao(gerarDescricaoEventoStatus(status));
+        evento.setDataEvento(java.time.LocalDateTime.now());
+        evento.setCriadoPor(usuarioLogado);
+
+        agendamentoEventoRepository.save(evento);
+    }
+
+    private String gerarTituloEventoStatus(StatusAgendamento status) {
+        return switch (status) {
+            case PENDENTE -> "Agendamento pendente";
+            case AGENDADO -> "Agendamento confirmado";
+            case CONFIRMADO -> "Agendamento confirmado";
+            case EM_ANDAMENTO -> "Serviço em andamento";
+            case QUASE_FINALIZADO -> "Serviço quase finalizado";
+            case FINALIZADO -> "Serviço finalizado";
+            case CANCELADO -> "Agendamento cancelado";
+        };
+    }
+
+    private String gerarDescricaoEventoStatus(StatusAgendamento status) {
+        return switch (status) {
+            case PENDENTE -> "O agendamento está pendente e aguardando andamento.";
+            case AGENDADO -> "O agendamento foi marcado e está aguardando atendimento.";
+            case CONFIRMADO -> "O agendamento foi confirmado.";
+            case EM_ANDAMENTO -> "O mecânico iniciou o atendimento do veículo.";
+            case QUASE_FINALIZADO -> "O serviço está em fase de conferência final.";
+            case FINALIZADO -> "O serviço foi concluído e o veículo está pronto.";
+            case CANCELADO -> "O agendamento foi cancelado.";
+        };
     }
 }
