@@ -12,15 +12,13 @@ public class JwtService {
 
     private static final String SECRET =
             "CHAVE_SUPER_SECRETA_DO_AGENDIFY_123456789012345";
+
     private static final long EXPIRATION = 1000 * 60 * 60;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // =====================================
-    // NOVO MÉTODO (com role)
-    // =====================================
     public String gerarToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
@@ -31,9 +29,6 @@ public class JwtService {
                 .compact();
     }
 
-    // =====================================
-    // MÉTODO ANTIGO (fallback)
-    // =====================================
     public String gerarToken(String email) {
         return gerarToken(email, "USER");
     }
