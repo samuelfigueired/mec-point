@@ -20,4 +20,6 @@ public interface UserService {
     void deletar(Long id);
 
     UserOutDTO atualizarRole(Long id, UserRole role);
+
+    List<UserOutDTO> listarMecanicos();
 }

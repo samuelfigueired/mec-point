@@ -41,6 +41,13 @@ public class UserController {
         return ResponseEntity.ok(service.listar());
     }
 
+    @GetMapping("/mecanicos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
+    @Operation(summary = "Lista usuários com perfil de mecânico")
+    public ResponseEntity<List<UserOutDTO>> listarMecanicos() {
+        return ResponseEntity.ok(service.listarMecanicos());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
     @Operation(summary = "Busca um usuário por ID")

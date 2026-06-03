@@ -95,4 +95,8 @@ public class UserServicePadrao implements UserService {
                     throw new BusinessException("E-mail já cadastrado.");
                 });
     }
+    @Override
+    public List<UserOutDTO> listarMecanicos() {
+        return mapper.toOutDTOList(repository.findByRole(UserRole.MECANICO));
+    }
 }
