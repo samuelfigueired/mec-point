@@ -2,6 +2,7 @@ package com.mecpoint.agendamento.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,4 +25,8 @@ public class AgendamentoOutDTO {
 
     private Long mecanicoId;
     private String mecanicoNome;
+
+    private Long servicoId;
+    private String servicoNome;
+    private BigDecimal servicoValor;
 }

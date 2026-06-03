@@ -6,16 +6,18 @@ import com.mecpoint.agendamento.entities.Agendamento;
 import com.mecpoint.agendamento.mapper.AgendamentoMapper;
 import com.mecpoint.agendamento.repository.AgendamentoRepository;
 import com.mecpoint.agendamento.service.AgendamentoService;
+import com.mecpoint.core.exceptions.BusinessException;
 import com.mecpoint.core.exceptions.ResourceNotFoundException;
+import com.mecpoint.servico.entities.Servico;
+import com.mecpoint.servico.repository.ServicoRepository;
 import com.mecpoint.user.entities.User;
+import com.mecpoint.user.entities.enums.UserRole;
 import com.mecpoint.user.repositories.UserRepository;
 import com.mecpoint.veiculo.entities.Veiculo;
 import com.mecpoint.veiculo.repository.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.mecpoint.core.exceptions.BusinessException;
-import com.mecpoint.user.entities.enums.UserRole;
 
 import java.time.Year;
 import java.util.List;
@@ -29,6 +31,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     private final AgendamentoRepository repository;
     private final VeiculoRepository veiculoRepository;
     private final UserRepository userRepository;
+    private final ServicoRepository servicoRepository;
     private final AgendamentoMapper mapper;
 
     @Override
@@ -60,12 +63,24 @@ public class AgendamentoServicePadrao implements AgendamentoService {
     }
 
     @Override
+    public List<AgendamentoOutDTO> listarPorMecanico(Long mecanicoId) {
+        buscarMecanico(mecanicoId);
+
+        return repository.findByMecanicoId(mecanicoId)
+                .stream()
+                .map(mapper::toOutDTO)
+                .toList();
+    }
+
+    @Override
     public AgendamentoOutDTO criarAgendamento(AgendamentoInDTO dto) {
         Agendamento entity = mapper.toEntity(dto);
 
         entity.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
         entity.setUsuario(buscarUsuario(dto.getUsuarioId()));
         entity.setMecanico(buscarMecanico(dto.getMecanicoId()));
+
+        aplicarServico(entity, dto);
 
         entity.setNumeroAgd(gerarNumeroAgendamento());
 
@@ -75,15 +90,13 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return mapper.toOutDTO(repository.save(entity));
     }
+
     @Override
     public AgendamentoOutDTO atualizarAgendamento(Long id, AgendamentoInDTO dto) {
         Agendamento agendamento = buscarEntidadePorId(id);
 
         agendamento.setCliente(dto.getCliente());
-        agendamento.setServico(dto.getServico());
         agendamento.setDataHora(dto.getDataHora());
-
-        agendamento.setMecanico(buscarMecanico(dto.getMecanicoId()));
 
         if (dto.getStatus() == null || dto.getStatus().isBlank()) {
             agendamento.setStatus("PENDENTE");
@@ -93,6 +106,9 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         agendamento.setVeiculo(buscarVeiculo(dto.getVeiculoId()));
         agendamento.setUsuario(buscarUsuario(dto.getUsuarioId()));
+        agendamento.setMecanico(buscarMecanico(dto.getMecanicoId()));
+
+        aplicarServico(agendamento, dto);
 
         return mapper.toOutDTO(repository.save(agendamento));
     }
@@ -110,7 +126,7 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
     private Veiculo buscarVeiculo(Long veiculoId) {
         if (veiculoId == null) {
-            return null;
+            throw new ResourceNotFoundException("Veículo do agendamento não informado.");
         }
 
         return veiculoRepository.findById(veiculoId)
@@ -140,6 +156,34 @@ public class AgendamentoServicePadrao implements AgendamentoService {
 
         return mecanico;
     }
+
+    private Servico buscarServicoOpcional(Long servicoId) {
+        if (servicoId == null) {
+            return null;
+        }
+
+        return servicoRepository.findById(servicoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + servicoId));
+    }
+
+    private void aplicarServico(Agendamento agendamento, AgendamentoInDTO dto) {
+        Servico servico = buscarServicoOpcional(dto.getServicoId());
+
+        if (servico != null) {
+            agendamento.setServicoRef(servico);
+            agendamento.setServico(servico.getNome());
+            return;
+        }
+
+        agendamento.setServicoRef(null);
+
+        if (dto.getServico() == null || dto.getServico().isBlank()) {
+            agendamento.setServico("Avaliação inicial");
+        } else {
+            agendamento.setServico(dto.getServico());
+        }
+    }
+
     private String gerarNumeroAgendamento() {
         String ano = String.valueOf(Year.now().getValue());
         String random = UUID.randomUUID().toString().substring(0, 6).toUpperCase();

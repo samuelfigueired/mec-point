@@ -1,6 +1,5 @@
 package com.mecpoint.agendamento.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -9,10 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class AgendamentoInDTO {
 
-    @NotBlank(message = "O cliente é obrigatório.")
     private String cliente;
 
-    @NotBlank(message = "O serviço é obrigatório.")
     private String servico;
 
     @NotNull(message = "A data e hora são obrigatórias.")
@@ -28,4 +25,6 @@ public class AgendamentoInDTO {
 
     @NotNull(message = "O mecânico é obrigatório.")
     private Long mecanicoId;
+
+    private Long servicoId;
 }

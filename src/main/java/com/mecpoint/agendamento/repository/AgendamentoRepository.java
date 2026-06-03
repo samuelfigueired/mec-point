@@ -12,4 +12,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByUsuarioId(Long usuarioId);
 
     List<Agendamento> findByVeiculoId(Long veiculoId);
+
+    List<Agendamento> findByMecanicoId(Long mecanicoId);
 }

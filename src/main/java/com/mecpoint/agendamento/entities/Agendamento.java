@@ -1,5 +1,6 @@
 package com.mecpoint.agendamento.entities;
 
+import com.mecpoint.servico.entities.Servico;
 import com.mecpoint.user.entities.User;
 import com.mecpoint.veiculo.entities.Veiculo;
 import jakarta.persistence.*;
@@ -43,4 +44,8 @@ public class Agendamento {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_MECANICO")
     private User mecanico;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_SERVICO")
+    private Servico servicoRef;
 }
