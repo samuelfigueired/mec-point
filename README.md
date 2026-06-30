@@ -75,4 +75,3 @@ src/main/java/com/mecpoint/
 
 ---
 
-Você quer que eu escreva esse conteúdo diretamente no arquivo HELP.md ou prefere criar um novo `README.md`?
