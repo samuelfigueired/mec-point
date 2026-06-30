@@ -48,15 +48,6 @@ O MecPoint permite que clientes agendem serviços para seus veículos com mecân
 - Maven
 - PostgreSQL em execução
 
-### Configuração
-
-Configure as variáveis de ambiente ou edite o arquivo application.properties com os dados da sua instância do banco:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/mecpoint
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
-```
 
 ### Executando
 
